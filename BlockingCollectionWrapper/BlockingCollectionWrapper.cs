@@ -11,6 +11,8 @@ public class BlockingCollectionWrapper<T> : IDisposable
     private CancellationTokenSource _cancellationTokenSource;
     private BlockingCollection<T> _queue = new BlockingCollection<T>();
 
+    private object _lockObj = new object();
+
     /// <summary>
     /// Set when the queue consumer is complete and the thread is ending
     /// </summary>
@@ -31,10 +33,13 @@ public class BlockingCollectionWrapper<T> : IDisposable
             // block on _queue.GetConsumerEnumerable. When an item is added the _queue lets us consume
             foreach (var item in _queue.GetConsumingEnumerable(_cancellationTokenSource.Token))
             {
-                // execute our registered consuming action
-                if (QueueConsumingAction != null)
+                lock (_lockObj)
                 {
-                    QueueConsumingAction(item);
+                    // execute our registered consuming action
+                    if (QueueConsumingAction != null)
+                    {
+                        QueueConsumingAction(item);
+                    }
                 }
             }
 
@@ -63,10 +68,28 @@ public class BlockingCollectionWrapper<T> : IDisposable
         }
     }
 
+    private Action<T> _queueConsumingAction;
+
     /// <summary>
     /// Registered queue consumer action
     /// </summary>
-    public Action<T> QueueConsumingAction { get; set; }
+    public Action<T> QueueConsumingAction
+    {
+        get
+        {
+            lock (_lockObj)
+            {
+                return _queueConsumingAction;
+            }
+        }
+        set
+        {
+            lock(_lockObj)
+            {
+                _queueConsumingAction = value;
+            }
+        }
+    }
 
     /// <summary>
     /// Add an item for the consumer queue
