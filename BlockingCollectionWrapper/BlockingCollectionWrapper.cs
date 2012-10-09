@@ -19,7 +19,7 @@ public class BlockingCollectionWrapper<T> : IDisposable
     /// <summary>
     /// Dispatched when the queue consumer is complete and the thread is ending
     /// </summary>
-    public event BlockingCollectionEvent FinishedEvent;
+    public event EventHandler<BlockingCollectionEventArgs> FinishedEvent;
 
     /// <summary>
     /// The actual consumer queue that runs in a seperate thread
@@ -140,8 +140,6 @@ public class BlockingCollectionWrapper<T> : IDisposable
         Dispose(true);
     }
 }
-
-public delegate void BlockingCollectionEvent(object sender, BlockingCollectionEventArgs args);
 
 public class BlockingCollectionEventArgs : EventArgs
 {
