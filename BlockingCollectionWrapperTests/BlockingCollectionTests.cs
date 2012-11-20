@@ -8,11 +8,15 @@ namespace BlockingCollectionWrapperTests
     [TestFixture]
     public class BlockingCollectionTests
     {
+        private readonly ManualResetEvent _testMutex = new ManualResetEvent(false);
+
         [Test]
         public void TestCollection()
         {
             // create the wrapper
             var asyncCollection = new BlockingCollectionWrapper<string>();
+
+            asyncCollection.FinishedEvent += FinishedEventHandler;
 
             // make sure we dispose of it. this will stop the internal threads
             using (asyncCollection)
@@ -35,12 +39,14 @@ namespace BlockingCollectionWrapperTests
                 }
             }
 
-            while (!asyncCollection.Finished)
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-            }
+            _testMutex.WaitOne();
 
             Assert.True(asyncCollection.Finished);
+        }
+
+        private void FinishedEventHandler(object sender, BlockingCollectionEventArgs e)
+        {
+            _testMutex.Set();
         }
     }
 }
