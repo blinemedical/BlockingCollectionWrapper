@@ -33,8 +33,8 @@ public class BlockingCollectionWrapper<T> : IDisposable
             // block on _queue.GetConsumerEnumerable. When an item is added the _queue lets us consume
             foreach (var item in _queue.GetConsumingEnumerable(_cancellationTokenSource.Token))
             {
-                // get a synchronized snapshot of the action
-                var consumerAction = QueueConsumingAction;
+                // get a synchronized copy of the action
+                Action<T> consumerAction = QueueConsumingAction;
                 
                 // execute our registered consuming action
                 if (consumerAction != null)
