@@ -12,35 +12,35 @@ namespace BlockingCollectionWrapperTests
         public void TestCollection()
         {
             // create the wrapper
-            var asynchCollection = new BlockingCollectionWrapper<string>();
+            var asyncCollection = new BlockingCollectionWrapper<string>();
 
             // make sure we dispose of it. this will stop the internal threads
-            using (asynchCollection)
+            using (asyncCollection)
             {
                 // register a consuming action
-                asynchCollection.QueueConsumingAction = (producedItem) =>
+                asyncCollection.QueueConsumingAction = (producedItem) =>
                 {
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                     Console.WriteLine(DateTime.Now + ": Consuming item: " + producedItem);
                 };
 
                 // start consuming
-                asynchCollection.Start();
+                asyncCollection.Start();
 
                 // start producing
                 for (int i = 0; i < 10; i++)
                 {
                     Console.WriteLine(DateTime.Now + ": Produced item " + i);
-                    asynchCollection.AddItem(i.ToString());
+                    asyncCollection.AddItem(i.ToString());
                 }
             }
 
-            while (!asynchCollection.Finished)
+            while (!asyncCollection.Finished)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
-            Assert.True(asynchCollection.Finished);
+            Assert.True(asyncCollection.Finished);
         }
     }
 }
